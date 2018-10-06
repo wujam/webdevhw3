@@ -1,3 +1,4 @@
+# Used code from Nat Tuck's lecture notes
 defmodule Memory.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
@@ -12,6 +13,7 @@ defmodule Memory.Application do
       MemoryWeb.Endpoint,
       # Starts a worker by calling: Memory.Worker.start_link(arg)
       # {Memory.Worker, arg},
+      Memory.BackupAgent,
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

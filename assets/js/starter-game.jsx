@@ -2,51 +2,45 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 
-export default function game_init(root) {
-  ReactDOM.render(<Starter />, root);
+export default function game_init(root, channel) {
+  ReactDOM.render(<Memory channel={channel} />, root);
+  console.log("game init");
 }
 
-class Starter extends React.Component {
+class Memory extends React.Component {
   constructor(props) {
     super(props);
+    this.channel = props.channel;
     // pick chars to use and put them in cells
-    var chars = ["A", "B", "C", "D", "E", "F", "G", "H"];
-    const num_cells = 8;
-    var sols = {};
-    var cellvals = {};
-    var cell_ids = [];
-    for (var i = 0; i < num_cells ; i++) {
-      const cell_char = chars[Math.floor(Math.random() * chars.length)];
-      _.remove(chars, function (value, index, array){ return value == cell_char;});
-      console.log(chars);
-      const id1 = 2 * i;
-      const id2 = id1 + 1;  
-      // save which ids are which character
-      _.extend(sols, {[id1]: cell_char, [id2]: cell_char});
-      _.extend(cellvals, {[id1]: "?", [id2]: "?"});
-      
-      cell_ids.push(id1);
-      cell_ids.push(id2);
-    }
-    // shuffle list of cells
-    cell_ids = _.shuffle(cell_ids);
-    console.log(sols);
-    console.log(cellvals);
     this.state = {
-        clicked: false,
-        lastclicked: "?",
         clicks: 0,
-        solutions: sols,
-        cell_vals: cellvals,
-        cell_ids: cell_ids};
-    console.log(this.state);
+        lastclicked: "?",
+        cell_vals: [],
+        cell_ids: [],
+        cells: []
+    };
+    this.channel.join()
+      .receive("ok", this.gotView.bind(this))
+      .receive("error", resp => { console.log("Unable to join", resp) });
   }
-
-  
-
-  swap(_ev) {
-    let state1 = _.assign({}, this.state, { clicked: !this.state.clicked });
+  gotView(view) {
+    console.log("new view", view);
+    this.setState(view.game);
+  }
+  updateCells(view) {
+    console.log(view)
+    var i;
+    var new_cell_vals = [];
+    for (i = 0; i < 16; i++) {
+      if (this.state.cell_vals[i] == "?") {
+          new_cell_vals[i] = view.game.cell_vals[i]; 
+      } else {
+          new_cell_vals[i] = this.state.cell_vals[i];
+      }
+    }
+    let state1 = _.assign({}, this.state, { cell_vals: new_cell_vals });
     this.setState(state1);
+    this.channel.push("save", { state: this.state});
   }
 
   on_click(_ev) {
@@ -54,10 +48,12 @@ class Starter extends React.Component {
     let state1 = _.assign({}, this.state, { clicks: this.state.clicks + 1, clicked: !this.state.clicked });
     this.setState(state1);
 
-    const id = parseInt(_ev.target.id)
-    
+    console.log(this.state.cell_vals)
+    const id = parseInt(_ev.target.id) - 1
+    this.channel.push("click", { id: id, cell_vals: this.state.cell_vals, cells: this.state.cells})
+      .receive("ok", this.updateCells.bind(this));
     // reveal tile
-    state1.cell_vals[id] = this.state.solutions[id];
+    state1.cell_vals[id] = this.state.cells[id];
     this.setState(state1);
     if (state1.clicked) {
         state1.lastclicked = id;
@@ -66,13 +62,15 @@ class Starter extends React.Component {
         var lastclicked = state1.lastclicked
         setTimeout(() => {
             let state1 = _.cloneDeep(this.state);
-            if (state1.solutions[id] != state1.solutions[lastclicked]) {
-                state1.cell_vals[id] = state1.cell_vals[lastclicked] = "?";
+            if (state1.cells[id] != state1.cells[lastclicked]) {
+                state1.cell_vals[id] = "?";
+                state1.cell_vals[lastclicked] = "?";
             }
             this.setState(state1);
+            this.channel.push("save", { state: this.state});
         }, 1000);
     }
-    
+    this.channel.push("save", { state: this.state});
   }
 
   render() {
@@ -81,17 +79,12 @@ class Starter extends React.Component {
         <div id="clicks">
             <p> Clicks: {this.state.clicks} </p>
         </div>
-        <div id="reset">
-            <form action="http://memory1.weab.club">
-                <button type="submit" value="Reset">Reset</button>
-            </form>
-        </div>
         <div className="row">
             {cell_ids.map(cells => 
             <div className="column">
                 {cells.map(cell_id =>
                     <p>
-                    <button id={"" + cell_id} onClick={this.on_click.bind(this)}>{this.state.cell_vals[cell_id]}</button>
+                    <button id={"" + cell_id} onClick={this.on_click.bind(this)}>{this.state.cell_vals[cell_id - 1]}</button>
                     </p>
                 )}
             </div>
