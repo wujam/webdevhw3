@@ -55,9 +55,6 @@ class Memory extends React.Component {
     const id = parseInt(_ev.target.id) - 1
     this.channel.push("click", {id: id})
       .receive("ok", this.updateCells.bind(this));
-    // reveal tile
-    state1.cell_vals[id] = this.state.cells[id];
-    this.setState(state1);
     /* removed and should be moved to server side
     if (state1.clicked) {
         state1.lastclicked = id;
