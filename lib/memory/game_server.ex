@@ -12,8 +12,8 @@ defmodule Memory.GameServer do
      GenServer.call(__MODULE__, {:view, game, user})
    end
 
-   def click(game, user, id, cell_vals, cells) do
-     GenServer.call(__MODULE__, {:click, game, user, id, cell_vals, cells})
+   def click(game, user, id) do
+     GenServer.call(__MODULE__, {:click, game, user, id})
    end
 
   ## Implementations
