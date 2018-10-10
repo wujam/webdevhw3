@@ -1,15 +1,10 @@
 <div class="row">
   <div class="column">
     <h1 id="index-page">Join a Game</h1>
-	<script type="text/javascript">
-	function makeGame(){
-	  location = "game/" + document.getElementById('gamename').value;
-      return false;
-	}
-	</script>
-    <form name="joingame" onSubmit="return makeGame();">
-      game name: <input type="text" id="gamename" />
-	  <input type="submit" value="Submit" />
-    </form>
+    <%= form_for @conn, "/join", [as: :join], fn f -> %>
+      <p>Your Name: <%= text_input f, :user %></p>
+      <p>Game Name: <%= text_input f, :game %></p>
+      <p><%= submit "Join" %>
+    <% end %>
   </div>
 </div>

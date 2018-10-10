@@ -1,3 +1,5 @@
+# TODO
+
 defmodule Memory.Game do
   def new do 
     %{
@@ -8,7 +10,7 @@ defmodule Memory.Game do
       cell_ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
       }
   end
-  def client_view(game) do
+  def client_view(game, user) do
     game
   end
   def gen_cells do
