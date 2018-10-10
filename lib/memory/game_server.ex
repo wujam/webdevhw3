@@ -18,17 +18,20 @@ defmodule Memory.GameServer do
 
   ## Implementations
    def init(state) do
+     IO.puts("init")
      {:ok, state}
    end
    def handle_call({:view, game, user}, _from, state) do
+     IO.puts(user)
      gg = Map.get(state, game, Game.new)
      vv = Game.client_view(gg, user)
      {:reply, vv, Map.put(state, game, gg)}
    end
   ## TODO
-   def handle_call({:click, game, user, id, cell_vals, cells}, _from, state) do
+   def handle_call({:click, game, user, id}, _from, state) do
+     IO.puts(user)
      gg = Map.get(state, game, Game.new)
-     ##|> Game.guess(user, letter)
+     |> Game.click(user, id)
      {:reply, Game.client_view(gg, user), Map.put(state, game, gg)}
    end
  end

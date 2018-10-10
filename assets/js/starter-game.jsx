@@ -13,7 +13,7 @@ class Memory extends React.Component {
     this.channel = props.channel;
     // pick chars to use and put them in cells
     this.state = {
-        clicks: 0,
+        players: [],
         lastclicked: "?",
         cell_vals: [],
         cell_ids: [],
@@ -29,6 +29,7 @@ class Memory extends React.Component {
   }
   updateCells(view) {
     console.log(view)
+    /* logic related to disappearing tiles, going to be removed
     var i;
     var new_cell_vals = [];
     for (i = 0; i < 16; i++) {
@@ -39,22 +40,25 @@ class Memory extends React.Component {
       }
     }
     let state1 = _.assign({}, this.state, { cell_vals: new_cell_vals });
-    this.setState(state1);
-    this.channel.push("save", { state: this.state});
+    */
+    this.setState(view.game);
   }
 
   on_click(_ev) {
     // increment clicks and swap clicked
-    let state1 = _.assign({}, this.state, { clicks: this.state.clicks + 1, clicked: !this.state.clicked });
-    this.setState(state1);
+
+    // old click increment system, moved to doing it on server 
+    //let state1 = _.assign({}, this.state, { clicks: this.state.clicks + 1, clicked: !this.state.clicked });
+    //this.setState(state1);
 
     console.log(this.state.cell_vals)
     const id = parseInt(_ev.target.id) - 1
-    this.channel.push("click", { id: id, cell_vals: this.state.cell_vals, cells: this.state.cells})
+    this.channel.push("click", {id: id})
       .receive("ok", this.updateCells.bind(this));
     // reveal tile
     state1.cell_vals[id] = this.state.cells[id];
     this.setState(state1);
+    /* removed and should be moved to server side
     if (state1.clicked) {
         state1.lastclicked = id;
         this.setState(state1);
@@ -71,13 +75,17 @@ class Memory extends React.Component {
         }, 1000);
     }
     this.channel.push("save", { state: this.state});
+    */
   }
 
   render() {
     const cell_ids = _.chunk(this.state.cell_ids, 4);
-    return (<div>
-        <div id="clicks">
-            <p> Clicks: {this.state.clicks} </p>
+    return (
+      <div>
+        <div id="scores">
+            {this.state.players.map(players =>
+                <p> Player {player.name} Clicks: {this.score} </p>
+            )}
         </div>
         <div className="row">
             {cell_ids.map(cells => 

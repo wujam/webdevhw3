@@ -10,6 +10,7 @@ defmodule MemoryWeb.PageController do
     |> put_session(:user, user)
     |> redirect(to: "/game/#{game}")
   end
+
   def game(conn, params) do
     user = get_session(conn, :user)
     if user do

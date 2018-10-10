@@ -4,6 +4,7 @@ defmodule MemoryWeb.Plugs.PutUserToken do
    def init(opts), do: opts
 
    def call(conn, _opts) do
+     IO.puts("got conn")
      if user = get_session(conn, :user) do
        token = Phoenix.Token.sign(conn, "user socket", user)
        assign(conn, :user_token, token)
