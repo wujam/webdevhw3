@@ -12,10 +12,7 @@ defmodule Memory.Game do
   end
 
   def new(players) do
-    players = Enum.map players, fn {name, info} ->
-      {name, %{ default_player() | score: info.score || 0}}
-    end
-    Map.put(new(), :players, Enum.into(players, %{}))
+    Map.put(new(), :players, players)
   end
   def default_player() do
     %{
@@ -35,16 +32,17 @@ defmodule Memory.Game do
   end
 
   def click(game, player, tilenum) do
-    tilenumatom = tilenum
-    |> Integer.to_string()
-    |> String.to_atom()
+    
+    IO.puts("game cells is #{game.cells}")
+    IO.puts("clicked cell is #{Enum.at(game.cells, tilenum)}")
     game
-    |> Map.put(:cell_vals, update_list(game.cell_vals, game.cells[tilenumatom], tilenum))
+    |> Map.put(:cell_vals, update_list(game.cell_vals, Enum.at(game.cells, tilenum), tilenum))
   end
 
   def update_list(list, element, 0) do
     [element | tl(list)]
   end
+
   def update_list(list, element, position) do
     [hd(list) | update_list(tl(list), element, position - 1)] 
   end
