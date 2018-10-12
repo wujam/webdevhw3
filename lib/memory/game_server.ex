@@ -2,6 +2,7 @@ defmodule Memory.GameServer do
    use GenServer
 
    alias Memory.Game
+   alias MemoryWeb.Endpoint
 
    ## Client Interface
    def start_link(_args) do
@@ -16,22 +17,49 @@ defmodule Memory.GameServer do
      GenServer.call(__MODULE__, {:click, game, user, id})
    end
 
+   def timecheck(game, user) do
+     GenServer.call(__MODULE__, {:timecheck, game, user})
+   end
+
+  def getView(game) do
+    GenServer.call(__MODULE__, {:getView, game})
+  end
+
   ## Implementations
    def init(state) do
      IO.puts("init")
      {:ok, state}
    end
    def handle_call({:view, game, user}, _from, state) do
-     IO.puts(user)
      gg = Map.get(state, game, Game.new)
      vv = Game.client_view(gg, user)
      {:reply, vv, Map.put(state, game, gg)}
    end
-  ## TODO
    def handle_call({:click, game, user, id}, _from, state) do
-     IO.puts(user)
      gg = Map.get(state, game, Game.new)
-     |> Game.click(user, id)
+          |> Game.click(user, id)
+     Process.send_after(self(), :timecheck, 1_000)
      {:reply, Game.client_view(gg, user), Map.put(state, game, gg)}
+   end
+
+   def handle_call({:getView, game}, _from, state) do
+     gg = Map.get(state, game, Game.new)
+     vv = Game.client_view(gg, "potato")
+     {:reply, Game.client_view(gg, "mango"), gg}
+   end
+
+   def handle_info(:timecheck, state) do
+     IO.puts("timecheck")
+     IO.inspect(state)
+     state =
+       Enum.reduce(state, %{}, fn {k, game}, acc ->
+         Endpoint.broadcast("game:" <> to_string(k), "update_board_set_view", game)
+         IO.puts("game:" <> to_string(k))
+         gg = game 
+            |> Game.handle_time()
+         [gg | acc]
+         Map.put(acc, k, gg)
+       end)
+     {:noreply, state}
    end
  end
