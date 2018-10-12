@@ -1,6 +1,7 @@
 # TODO
 
 defmodule Memory.Game do
+  alias MemoryWeb.Endpoint
   def new do 
     %{
       cells: gen_cells(),
@@ -62,7 +63,7 @@ defmodule Memory.Game do
     |> Enum.take_random(16)
   end
 
-  def handle_time(game) do
+  def handle_time(game, gamename) do
     cell_vals = Enum.reduce(game.lastclicks, game.cell_vals, fn [id1, id2, time], acc ->
         IO.puts("checking #{id1} and #{id2} timedelta is #{time - :os.system_time(:milli_seconds)}")
         if time <= :os.system_time(:milli_seconds) do
@@ -81,6 +82,7 @@ defmodule Memory.Game do
           [[id1, id2, time] | acc]
         end
       end)
+
     game
     |> Map.put(:cell_vals, cell_vals)
     |> Map.put(:lastclicks, last_clicks)

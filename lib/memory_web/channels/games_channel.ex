@@ -17,7 +17,7 @@ defmodule MemoryWeb.GamesChannel do
   # by sending replies to requests from the client
   def handle_in("click", %{"id" => id}, socket) do
     view = GameServer.click(socket.assigns[:game], socket.assigns[:user], id)
-    broadcast_from! socket, "update_board", view
+    broadcast_from! socket, "update_board_set_view", view
     {:reply, {:ok, %{ "game" => view}}, socket}
   end
   
@@ -27,7 +27,7 @@ defmodule MemoryWeb.GamesChannel do
     IO.puts("blast")
     
     IO.inspect(view)
-    broadcast_from! socket, "update_board", view
+    broadcast_from! socket, "update_board_set_view", view
     {:reply, {:ok, %{"game" => view}}, socket}
   end
   

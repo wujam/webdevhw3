@@ -22,7 +22,6 @@ class Memory extends React.Component {
     this.channel.join()
       .receive("ok", this.gotView.bind(this))
       .receive("error", resp => { console.log("Unable to join", resp) });
-    this.channel.on("update_board", this.gotView.bind(this))
     this.channel.on("update_board_set_view", this.gotViewSetView.bind(this))
   }
   gotView(view) {
@@ -30,7 +29,7 @@ class Memory extends React.Component {
     this.setState(view.game);
   }
   gotViewSetView(view) {
-    console.log("new view", view);
+    console.log("new view set view", view);
     this.setState(view);
   }
   updateCells(view) {
@@ -57,10 +56,10 @@ class Memory extends React.Component {
     //let state1 = _.assign({}, this.state, { clicks: this.state.clicks + 1, clicked: !this.state.clicked });
     //this.setState(state1);
 
-    console.log(this.state.cell_vals)
     const id = parseInt(_ev.target.id) - 1
     this.channel.push("click", {id: id})
       .receive("ok", this.updateCells.bind(this));
+    console.log(this.state)
     /* removed and should be moved to server side
     if (state1.clicked) {
         state1.lastclicked = id;
